@@ -17,10 +17,10 @@ public:
 	void mouseDragged(int x, int y, int button);
 	void mouseReleased(int x, int y, int button);
 	
-    ofImage right, warpedColor;
+    ofImage originalImage, warpedImage;
     
-    vector<Point2f> leftPoints;
-	vector<ofVec2f> rightPoints;
+    vector<Point2f> warpedPoints;
+	vector<ofVec2f> originalPoints;
     
 	bool movingPoint;
 	ofVec2f* curPoint;
