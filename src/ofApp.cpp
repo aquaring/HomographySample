@@ -6,8 +6,9 @@ using namespace cv;
 void ofApp::setup() {
 	ofSetVerticalSync(true);
 	
-	originalImage.loadImage("right.jpg");
-	imitate(warpedImage, originalImage);
+    // Camera
+    camera.setDeviceID(0); //0:iSight 1:WebCamera
+    camera.initGrabber(ofGetWidth()/2, ofGetHeight());
 	
 	movingPoint = false;
 	homographyReady = false;
@@ -24,19 +25,25 @@ void ofApp::setup() {
 }
 
 void ofApp::update() {
-    vector<Point2f> srcPoints;
-    for(int i = 0; i < 4; i++) {
-        srcPoints.push_back(Point2f(originalPoints[i].x - originalImage.getWidth(), originalPoints[i].y));
+    camera.update();
+    if(camera.isFrameNew()) {
+        originalImage.setFromPixels(camera.getPixelsRef());
+        imitate(warpedImage, originalImage);
+        
+        vector<Point2f> srcPoints;
+        for(int i = 0; i < 4; i++) {
+            srcPoints.push_back(Point2f(originalPoints[i].x - originalImage.getWidth(), originalPoints[i].y));
+        }
+        
+        // generate a homography from the two sets of points
+        homography = findHomography(Mat(srcPoints), Mat(warpedPoints));
+        homographyReady = true;
+        
+        if(homographyReady) {
+            warpPerspective(originalImage, warpedImage, homography, CV_INTER_LINEAR);
+            warpedImage.update();
+        }
     }
-    
-    // generate a homography from the two sets of points
-    homography = findHomography(Mat(srcPoints), Mat(warpedPoints));
-    homographyReady = true;
-	
-	if(homographyReady) {
-		warpPerspective(originalImage, warpedImage, homography, CV_INTER_LINEAR);
-		warpedImage.update();
-	}
 }
 
 void ofApp::draw() {
